@@ -15,12 +15,13 @@ const moviesOutput = document.getElementById("movies-output");
 
 const githubButton = document.getElementById("github-button");
 const githubOutput = document.getElementById("github-output");
+const userField = document.getElementById("username");
 
 const jokeButton = document.getElementById("joke-button");
 const jokeOutput = document.getElementById("joke-output");
 
-const pubButton = document.getElementById("pub-button");
-const pubOutput = document.getElementById("pub-output");
+const apodButton = document.getElementById("apod-button");
+const apodOutput = document.getElementById("apod-output");
 
 async function getDogImage() {
   const response = await fetch("https://dog.ceo/api/breeds/image/random");
@@ -87,8 +88,87 @@ async function tellJoke() {
   }
 }
 
+async function getMovies() {
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYjkwY2M5Yzg0ZmM4YjdjYjgxODQwMDY5MDE1M2Q0NyIsIm5iZiI6MTc4MTk5MjE4OC4zMTYsInN1YiI6IjZhMzcwYWZjNjA5NmUyYzdkNWNlZDM3MyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.aMHyK76iVhhT2IrHXb2tHVAYgmKz25m_ER6pOiQp6bQ",
+    },
+  };
+  const response = await fetch(
+    "https://api.themoviedb.org/3/movie/2062/images",
+    options,
+  );
+  const data = await response.json();
+  const imageBaseUrl = "https://image.tmdb.org/t/p/w500";
+  const numberOfImages = data.backdrops.length;
+  const randomImageIndex = Math.floor(Math.random() * numberOfImages);
+  const randomImageFilePath = data.backdrops[randomImageIndex].file_path;
+
+  moviesOutput.innerHTML = "";
+
+  const randomImage = document.createElement("img");
+  randomImage.src = `${imageBaseUrl}${randomImageFilePath}`;
+
+  moviesOutput.appendChild(randomImage);
+}
+
+async function getAPOD() {
+  const response = await fetch(
+    "https://api.nasa.gov/planetary/apod?api_key=QGg4RPkPGqiiyRVW0i03xThUd0fSmydFAheTWkci",
+  );
+  const data = await response.json();
+
+  apodOutput.innerHTML = "";
+
+  const apodImg = document.createElement("img");
+  apodImg.src = data.url;
+
+  apodOutput.appendChild(apodImg);
+}
+
+async function getUser(userInput) {
+  const baseQueryURL = "https://api.github.com/search/users?q=";
+  const queryInfo = userInput;
+  const response = await fetch(`${baseQueryURL}${queryInfo}`);
+  const data = await response.json();
+
+  console.log(data);
+  console.log(data.items);
+  console.log(data.items[0]);
+  console.log(data.items[0].login);
+  console.log(data.items[0].html_url);
+  console.log(data.items[0].avatar_url);
+
+  const topUsername = data.items[0].login;
+  const topURL = data.items[0].html_url;
+  const topAvatar = data.items[0].avatar_url;
+
+  githubOutput.innerHTML = "";
+
+  githubOutput.innerText = `Most Relevant Username: ${topUsername}`;
+  const avatarImage = document.createElement("img");
+  avatarImage.src = `${topAvatar}`;
+
+  githubOutput.appendChild(avatarImage);
+
+  const userLink = document.createElement("a");
+  userLink.textContent = "Visit User Profile";
+  userLink.href = topURL;
+  userLink.target = "_blank";
+  githubOutput.appendChild(userLink);
+}
+
 dogButton.addEventListener("click", getDogImage);
 catButton.addEventListener("click", getCatImage);
 weatherButton.addEventListener("click", getWeather);
 currencyButton.addEventListener("click", convertCurrency);
 jokeButton.addEventListener("click", tellJoke);
+moviesButton.addEventListener("click", getMovies);
+apodButton.addEventListener("click", getAPOD);
+githubButton.addEventListener("click", () => {
+  const userInput = userField.value;
+  getUser(userInput);
+});
